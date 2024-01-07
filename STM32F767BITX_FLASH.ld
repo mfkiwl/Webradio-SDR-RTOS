@@ -46,6 +46,7 @@ MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 512K
   FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 2048K
+  SDRAM	(rwx)	: ORIGIN = 0xD0000000,	LENGTH = 8192K
 }
 
 /* Sections */
@@ -172,6 +173,13 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
+  
+  /* external SDRAM */
+  .sdram (NOLOAD) :
+  {
+	. = ALIGN(4);
+	*(.sdram .sdram.*)
+  } > SDRAM
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :

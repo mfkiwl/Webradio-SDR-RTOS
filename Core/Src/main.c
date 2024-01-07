@@ -126,7 +126,7 @@ static void MX_FMC_Init(void);
 void StartLEDTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-
+static void SDRAM_InitSequence();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -1333,7 +1333,7 @@ static void MX_FMC_Init(void)
   }
 
   /* USER CODE BEGIN FMC_Init 2 */
-
+  SDRAM_InitSequence();
   /* USER CODE END FMC_Init 2 */
 }
 
@@ -1551,6 +1551,81 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+#define REFRESH_COUNT      ((uint32_t)683)  /* SDRAM refresh counter old setting */
+#define SDRAM_TIMEOUT      ((uint32_t)0xFFFF)
+/**
+ * @brief FMC SDRAM Mode definition register defines
+ */
+#define SDRAM_MODEREG_BURST_LENGTH_1       ((uint16_t)0x0000)
+#define SDRAM_MODEREG_BURST_LENGTH_2       ((uint16_t)0x0001)
+#define SDRAM_MODEREG_BURST_LENGTH_4       ((uint16_t)0x0002)
+#define SDRAM_MODEREG_BURST_LENGTH_8       ((uint16_t)0x0004)
+#define SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL   ((uint16_t)0x0000)
+#define SDRAM_MODEREG_BURST_TYPE_INTERLEAVED   ((uint16_t)0x0008)
+#define SDRAM_MODEREG_CAS_LATENCY_2       ((uint16_t)0x0020)
+#define SDRAM_MODEREG_CAS_LATENCY_3       ((uint16_t)0x0030)
+#define SDRAM_MODEREG_OPERATING_MODE_STANDARD  ((uint16_t)0x0000)
+#define SDRAM_MODEREG_WRITEBURST_MODE_PROGRAMMED ((uint16_t)0x0000)
+#define SDRAM_MODEREG_WRITEBURST_MODE_SINGLE   ((uint16_t)0x0200)
+
+static void SDRAM_InitSequence() {
+
+	FMC_SDRAM_CommandTypeDef FMC_SDRAMCommandStructure;
+	uint32_t tmpr = 0;
+
+	/* Step 1 --------------------------------------------------------------------*/
+	/* Configure a clock configuration enable command */
+	FMC_SDRAMCommandStructure.CommandMode = FMC_SDRAM_CMD_CLK_ENABLE;
+	FMC_SDRAMCommandStructure.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK2;
+	FMC_SDRAMCommandStructure.AutoRefreshNumber = 1;
+	FMC_SDRAMCommandStructure.ModeRegisterDefinition = 0;
+	while( (HAL_SDRAM_GetState(&hsdram1) & HAL_SDRAM_STATE_BUSY) );	// Check Busy Flag before sending command
+	HAL_SDRAM_SendCommand(&hsdram1, &FMC_SDRAMCommandStructure, SDRAM_TIMEOUT);
+
+	/* Step 2 --------------------------------------------------------------------*/
+	/* Configure a PALL (precharge all) command */
+	FMC_SDRAMCommandStructure.CommandMode = FMC_SDRAM_CMD_PALL;
+	FMC_SDRAMCommandStructure.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK2;
+	FMC_SDRAMCommandStructure.AutoRefreshNumber = 1;
+	FMC_SDRAMCommandStructure.ModeRegisterDefinition = 0;
+	while( (HAL_SDRAM_GetState(&hsdram1) & HAL_SDRAM_STATE_BUSY) );	// Check Busy Flag before sending command
+	HAL_SDRAM_SendCommand(&hsdram1, &FMC_SDRAMCommandStructure, SDRAM_TIMEOUT);
+
+	/* Step 3 --------------------------------------------------------------------*/
+	/* Configure a Auto-Refresh command */
+	FMC_SDRAMCommandStructure.CommandMode = FMC_SDRAM_CMD_AUTOREFRESH_MODE;
+	FMC_SDRAMCommandStructure.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK2;
+	FMC_SDRAMCommandStructure.AutoRefreshNumber = 4;
+	FMC_SDRAMCommandStructure.ModeRegisterDefinition = 0;
+	while( (HAL_SDRAM_GetState(&hsdram1) & HAL_SDRAM_STATE_BUSY) );	// Check Busy Flag before sending command
+	HAL_SDRAM_SendCommand(&hsdram1, &FMC_SDRAMCommandStructure, SDRAM_TIMEOUT);
+
+	/* Step 4 --------------------------------------------------------------------*/
+	/* Program the external memory mode register */
+	tmpr = (uint32_t)	SDRAM_MODEREG_BURST_LENGTH_1     |
+					SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL  |
+					SDRAM_MODEREG_CAS_LATENCY_3      |
+					SDRAM_MODEREG_OPERATING_MODE_STANDARD |
+					SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;
+
+	/* Step 5 --------------------------------------------------------------------*/
+	/* Configure a load Mode register command*/
+	FMC_SDRAMCommandStructure.CommandMode = FMC_SDRAM_CMD_LOAD_MODE;
+	FMC_SDRAMCommandStructure.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK2;
+	FMC_SDRAMCommandStructure.AutoRefreshNumber = 1;
+	FMC_SDRAMCommandStructure.ModeRegisterDefinition = tmpr;
+	while( (HAL_SDRAM_GetState(&hsdram1) & HAL_SDRAM_STATE_BUSY) );	// Check Busy Flag before sending command
+	HAL_SDRAM_SendCommand(&hsdram1, &FMC_SDRAMCommandStructure, SDRAM_TIMEOUT);
+
+	/* Step 6 --------------------------------------------------------------------*/
+	/* Set the refresh rate counter */
+	/* (7.81 us x Freq) - 20 */
+	/* Set the device refresh counter */
+	while( (HAL_SDRAM_GetState(&hsdram1) & HAL_SDRAM_STATE_BUSY) );	// Check Busy Flag before sending command
+	HAL_SDRAM_ProgramRefreshRate(&hsdram1, REFRESH_COUNT); // local
+
+	while( (HAL_SDRAM_GetState(&hsdram1) & HAL_SDRAM_STATE_BUSY) );	// Check Busy Flag before returning
+}
 
 /* USER CODE END 4 */
 
