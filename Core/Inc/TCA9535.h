@@ -1,5 +1,5 @@
-#ifndef APP_INCLUDE_TCA9535_H_
-#define APP_INCLUDE_TCA9535_H_
+#ifndef INC_INCLUDE_TCA9535_H_
+#define INC_INCLUDE_TCA9535_H_
 
 #include "stm32f7xx_hal.h"
 #include "main.h"
@@ -26,4 +26,4 @@ HAL_StatusTypeDef TCA9535_Get_Register(TCA9535_register reg, uint8_t* data);
 HAL_StatusTypeDef TCA9535_drive_LEDs(uint8_t value);
 uint8_t TCA9535_get_LEDs();
 
-#endif /* APP_INCLUDE_TCA9535_H_ */
+#endif /* INC_INCLUDE_TCA9535_H_ */

@@ -144,7 +144,7 @@ static void v_uart_putc(uint8_t c)
 {
 	HAL_StatusTypeDef Status;
 	Status = HAL_UART_Transmit(&huart4, &c, 1, HAL_MAX_DELAY);
-	//Status = HAL_UART_Transmit_DMA(uart_ptr, &c, 1);
+	//Status = HAL_UART_Transmit_DMA(&huart4, &c, 1);
 
 	if(Status != HAL_OK)
 		DEBUGOUT("debug v_uart_putc error...\r\n");
