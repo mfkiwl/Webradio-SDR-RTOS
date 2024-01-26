@@ -29,6 +29,7 @@
 #include "const.h"
 #include "debug.h"
 #include "TCA9535.h"
+#include "Touchscreen.h"
 
 /* USER CODE END Includes */
 
@@ -92,6 +93,13 @@ const osThreadAttr_t LEDTask_attributes = {
   .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for SystemMenuTask */
+osThreadId_t SystemMenuTaskHandle;
+const osThreadAttr_t SystemMenuTask_attributes = {
+  .name = "SystemMenuTask",
+  .stack_size = 1024 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -124,6 +132,7 @@ static void MX_UART4_Init(void);
 static void MX_DMA2D_Init(void);
 static void MX_FMC_Init(void);
 void StartLEDTask(void *argument);
+void StartSystemMenuTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 static void SDRAM_InitSequence();
@@ -189,7 +198,6 @@ int main(void)
   MX_DMA2D_Init();
   MX_FMC_Init();
   /* USER CODE BEGIN 2 */
-  TCA9535_Init();
 
   DEBUGOUT("\n"APPNAME" v"APPVERSION" ("__DATE__" "__TIME__")\r\n");
   DEBUGOUT("Hardware: "STM_NAME", "LCD_NAME"\r\n");
@@ -218,6 +226,9 @@ int main(void)
   /* Create the thread(s) */
   /* creation of LEDTask */
   LEDTaskHandle = osThreadNew(StartLEDTask, NULL, &LEDTask_attributes);
+
+  /* creation of SystemMenuTask */
+  SystemMenuTaskHandle = osThreadNew(StartSystemMenuTask, NULL, &SystemMenuTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -1644,6 +1655,8 @@ void StartLEDTask(void *argument)
   /* init code for LWIP */
   MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
+  TCA9535_Init();
+  Touchscreen_Init();
   //uint8_t data[26] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
   /* Infinite loop */
   for(;;)
@@ -1664,6 +1677,24 @@ void StartLEDTask(void *argument)
     //TCA9535_drive_LEDs(data >> 2);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartSystemMenuTask */
+/**
+* @brief Function implementing the SystemMenuTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSystemMenuTask */
+void StartSystemMenuTask(void *argument)
+{
+  /* USER CODE BEGIN StartSystemMenuTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartSystemMenuTask */
 }
 
 /**

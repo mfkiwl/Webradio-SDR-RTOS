@@ -1,4 +1,4 @@
-#include "debug.h"
+#include <debug.h>
 
 uint8_t tx_buffer[TX_BUFF_SIZE];
 uint16_t buff_head, buff_tail;

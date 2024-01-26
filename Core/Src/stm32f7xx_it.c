@@ -22,6 +22,10 @@
 #include "stm32f7xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "Touchscreen.h"
+#include "ESP8266.h"
+#include "VS1053.h"
+#include "RC5.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -170,7 +174,7 @@ void DebugMon_Handler(void)
 void EXTI1_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI1_IRQn 0 */
-
+  ESP8266_Interrupt();
   /* USER CODE END EXTI1_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(ESP_INT_Pin);
   /* USER CODE BEGIN EXTI1_IRQn 1 */
@@ -184,7 +188,7 @@ void EXTI1_IRQHandler(void)
 void EXTI2_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI2_IRQn 0 */
-
+  Touchscreen_Interrupt();
   /* USER CODE END EXTI2_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(TOUCH_INT_Pin);
   /* USER CODE BEGIN EXTI2_IRQn 1 */
@@ -198,7 +202,7 @@ void EXTI2_IRQHandler(void)
 void EXTI3_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI3_IRQn 0 */
-
+  VS1053_Interrupt();
   /* USER CODE END EXTI3_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(VS_DREQ_Pin);
   /* USER CODE BEGIN EXTI3_IRQn 1 */
@@ -212,7 +216,7 @@ void EXTI3_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-
+  RC5_Interrupt();
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(RC5_Pin);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
